@@ -2,10 +2,10 @@ import graphene
 
 from graphql_relay import from_global_id
 
-from .djangoObjectType import BlogType, CircuitType, DestinationType, PointInteretType, ReservationType, SaisonType, UtilisateurType, VehiculeType
+from .djangoObjectType import BlogType, CircuitType, DestinationType, FaqType, PointInteretType, ReservationType, SaisonType, UtilisateurType, VehiculeType
 
 from .models import (
-    Utilisateur, Destination, Saison, Circuit, PointInteret,
+    Faq, Utilisateur, Destination, Saison, Circuit, PointInteret,
      Vehicule, Reservation, Blog,
 )
 
@@ -513,3 +513,91 @@ class DeleteVehiculeMutation(graphene.Mutation):
         except Vehicule.DoesNotExist:
             success = False
         return DeleteVehiculeMutation(success=success)
+
+#FAQ
+class CreateFaqMutation(graphene.Mutation):
+    class Arguments:
+        question = graphene.String(required=True)
+        reponse = graphene.String(required=True)
+        categorie = graphene.String()
+        order_affichage = graphene.Int(default_value=0)
+        active = graphene.Boolean(default_value=True)
+
+    faq = graphene.Field(FaqType)
+
+    def mutate(self, info, question, reponse, categorie=None, order_affichage=0, active=True):
+        faq = Faq.objects.create(
+            question=question,
+            reponse=reponse,
+            categorie=categorie,
+            order_affichage=order_affichage,
+            active=active
+        )
+        return CreateFaqMutation(faq=faq)
+
+class UpdateFaqMutation(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+        question = graphene.String()
+        reponse = graphene.String()
+        categorie = graphene.String()
+        order_affichage = graphene.Int()
+        active = graphene.Boolean()
+
+    faq = graphene.Field(FaqType)
+
+    def mutate(self, info, id, **kwargs):
+        try:
+            # Imprimez l'ID pour déboguer
+            print(f"ID reçu dans updateFaq: {id}")
+            
+            # Ne pas utiliser from_global_id si vos IDs sont des UUID standards
+            faq_id = id
+                
+            # Vérifiez que l'objet existe
+            faq = Faq.objects.get(id=faq_id)
+            
+            # Mise à jour des champs fournis
+            if 'question' in kwargs:
+                faq.question = kwargs['question']
+            if 'reponse' in kwargs:
+                faq.reponse = kwargs['reponse']
+            if 'categorie' in kwargs:
+                faq.categorie = kwargs['categorie']
+            if 'order_affichage' in kwargs:
+                faq.order_affichage = kwargs['order_affichage']
+            if 'active' in kwargs:
+                faq.active = kwargs['active']
+                
+            faq.save()
+            return UpdateFaqMutation(faq=faq)
+        except Faq.DoesNotExist:
+            print(f"FAQ avec ID {faq_id} non trouvée")
+            raise Exception(f"FAQ avec ID {faq_id} non trouvée")
+        except Exception as e:
+            print(f"Erreur inattendue: {str(e)}")
+            raise Exception(f"Erreur inattendue: {str(e)}")
+
+class DeleteFaqMutation(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+
+    success = graphene.Boolean()
+
+    def mutate(self, info, id):
+        try:
+            # Imprimez l'ID pour déboguer
+            print(f"ID reçu dans deleteFaq: {id}")
+            
+            # Ne pas utiliser from_global_id si vos IDs sont des UUID standards
+            faq_id = id
+                
+            faq = Faq.objects.get(id=faq_id)
+            faq.delete()
+            return DeleteFaqMutation(success=True)
+        except Faq.DoesNotExist:
+            print(f"FAQ avec ID {faq_id} non trouvée")
+            raise Exception(f"FAQ avec ID {faq_id} non trouvée")
+        except Exception as e:
+            print(f"Erreur inattendue: {str(e)}")
+            raise Exception(f"Erreur inattendue: {str(e)}")

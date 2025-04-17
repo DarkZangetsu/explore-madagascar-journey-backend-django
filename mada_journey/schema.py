@@ -1,9 +1,9 @@
+from mada_journey.models import Faq
 from .djangoObjectType import BlogCommentaireType, BlogType, CapaciteType, CircuitType, DestinationType, FaqType, GuideType, MessageType, PointInteretType, ReservationType, SaisonType, TypeVehiculeType, UtilisateurType, VehiculeType
-from .mutation import CreateBlogMutation, CreateCircuitMutation, CreateDestinationMutation, CreatePointInteretMutation, CreateReservationMutation, CreateSaisonMutation, CreateUtilisateurMutation, CreateVehiculeMutation, DeleteBlogMutation, DeleteCircuitMutation, DeleteDestinationMutation, DeletePointInteretMutation, DeleteReservationMutation, DeleteSaisonMutation, DeleteUtilisateurMutation, DeleteVehiculeMutation, UpdateBlogMutation, UpdateCircuitMutation, UpdateDestinationMutation, UpdatePointInteretMutation, UpdateReservationMutation, UpdateSaisonMutation, UpdateUtilisateurMutation, UpdateVehiculeMutation
+from .mutation import CreateBlogMutation, CreateCircuitMutation, CreateDestinationMutation, CreateFaqMutation, CreatePointInteretMutation, CreateReservationMutation, CreateSaisonMutation, CreateUtilisateurMutation, CreateVehiculeMutation, DeleteBlogMutation, DeleteCircuitMutation, DeleteDestinationMutation, DeleteFaqMutation, DeletePointInteretMutation, DeleteReservationMutation, DeleteSaisonMutation, DeleteUtilisateurMutation, DeleteVehiculeMutation, UpdateBlogMutation, UpdateCircuitMutation, UpdateDestinationMutation, UpdateFaqMutation, UpdatePointInteretMutation, UpdateReservationMutation, UpdateSaisonMutation, UpdateUtilisateurMutation, UpdateVehiculeMutation
 import graphene
 
 class Query(graphene.ObjectType):
-    # Nodes
     utilisateur = graphene.Field(UtilisateurType)
     destination = graphene.Field(DestinationType)
     saison = graphene.Field(SaisonType)
@@ -17,9 +17,7 @@ class Query(graphene.ObjectType):
     message = graphene.Field(MessageType)
     blog = graphene.Field(BlogType)
     blog_commentaire = graphene.Field(BlogCommentaireType)
-    faq = graphene.Field(FaqType)
-    
-    # All
+   
     all_utilisateurs = graphene.List(UtilisateurType)
     all_destinations = graphene.List(DestinationType)
     all_saisons = graphene.List(SaisonType)
@@ -33,7 +31,15 @@ class Query(graphene.ObjectType):
     all_messages = graphene.List(MessageType)
     all_blogs = graphene.List(BlogType)
     all_blog_commentaires = graphene.List(BlogCommentaireType)
+
+    # Faqs
+    faq = graphene.Field(FaqType, id=graphene.String(required=True))
     all_faqs = graphene.List(FaqType)
+    def resolve_faq (self,info, id):
+        return Faq.objects.get(id=id)
+    def resolve_all_faqs(self, info):
+        return Faq.objects.all()
+
 
 # Mutation
 class Mutation(graphene.ObjectType):
@@ -76,6 +82,11 @@ class Mutation(graphene.ObjectType):
     create_vehicule = CreateVehiculeMutation.Field()
     update_vehicule = UpdateVehiculeMutation.Field()
     delete_vehicule = DeleteVehiculeMutation.Field()
+
+    #faq
+    create_faq = CreateFaqMutation.Field()
+    update_faq = UpdateFaqMutation.Field()
+    delete_faq = DeleteFaqMutation.Field()
 
 # Schéma
 schema = graphene.Schema(query=Query, mutation=Mutation)
